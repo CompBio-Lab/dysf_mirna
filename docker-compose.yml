@@ -1,0 +1,13 @@
+services:
+  rstudio:
+    build: .
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./data:/home/rstudio/data
+      - ./src:/home/rstudio/src
+      - ./results:/home/rstudio/results
+      - ./cel_files:/home/rstudio/cel_files:ro
+    environment:
+      - PASSWORD=dysf2025
+      - DISABLE_AUTH=false

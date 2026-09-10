@@ -1,0 +1,40 @@
+# macOS metadata
+.DS_Store
+._*
+
+# R session and package artifacts
+.Rhistory
+.RData
+.Ruserdata
+*.Rcheck/
+*.tar.gz
+
+# RStudio project state
+.Rproj.user/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and temporary files
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Logs and temporary directories
+*.log
+tmp/
+temp/
+
+# Microsoft Office lock files
+~$*
+
+# Project data, generated results, and manuscripts
+cel_files/
+data/
+geo/
+manuscript/
+results/
