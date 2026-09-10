@@ -20,13 +20,14 @@ docker compose build --no-cache && docker compose up -d
 
 # 4. Run scripts in order (in RStudio console or terminal)
 Rscript src/00_cel_to_normalized.R    # CEL → normalized data (one-time)
+Rscript src/00b_qc_cel.R              # CEL quality-control report
 Rscript src/01_data_import.R          # Load + filter → 666 probes
-Rscript src/02_figure1_pca_heatmap.R  # Figure 1: PCA × clinical heatmap
-Rscript src/03_figure2_volcano.R      # Figure 2: FDR rank + volcano plots
-Rscript src/04_figure3_mir4532_boxplot.R  # Figure 3: miR-4532 boxplot
-Rscript src/05_figure4_cbc_heatmap.R  # Figure 4: CBC correlation heatmap
-Rscript src/06_figure5_monocyte_scatter.R # Figure 5: Monocyte scatter
-Rscript src/07_figure6_enrichr_network.R  # Figure 6: enrichR network/dotplot
+Rscript src/02_FigS1_pca_heatmap.R    # Figure S1: PCA × clinical heatmap
+Rscript src/03_Fig1_fdr_volcano.R     # Figure 1: FDR rank + volcano plots
+Rscript src/04_Fig2A_mir4532boxplot.R # Figure 2A: miR-4532 boxplot
+Rscript src/05_Fig2B_cbc_heatmap.R    # Figure 2B: CBC correlation heatmap
+Rscript src/06_Fig2C_monocyte_scatter.R # Figure 2C: Monocyte scatter
+Rscript src/07_Fig2D_enrichr_network.R  # Figure 2D: enrichR network/dotplot
 ```
 
 ## Script Descriptions
@@ -34,13 +35,14 @@ Rscript src/07_figure6_enrichr_network.R  # Figure 6: enrichR network/dotplot
 | Script | Input | Output | Description |
 |--------|-------|--------|-------------|
 | `00_cel_to_normalized.R` | `cel_files/*.CEL` | `data/mirna/normalized_data.TXT` | RMA normalization via oligo (pd.mirna.4.0, checkType=FALSE) |
+| `00b_qc_cel.R` | `cel_files/*.CEL` | `results/qc/cel_qc_report.pdf`, QC PNGs and CSVs | CEL-level quality-control diagnostics |
 | `01_data_import.R` | `normalized_data.TXT`, clinical/CBC CSVs | `results/01_mirna_filtered.rds`, `results/01_clinical.rds` | Load data, annotate probes, filter to 666 probes |
-| `02_figure1_pca_heatmap.R` | RDS from step 1 | `results/fig1_pca_heatmap.png` | PCA (rank=5) × clinical variable heatmap (ANOVA p-values) |
-| `03_figure2_volcano.R` | RDS from step 1 | `results/fig2_volcano.png` | limma DE (3 contrasts), FDR rank plot + volcano |
-| `04_figure3_mir4532_boxplot.R` | RDS from steps 1–2 | `results/fig3_mir4532_boxplot.png` | Two-stage candidate selection, miR-4532 boxplot |
-| `05_figure4_cbc_heatmap.R` | RDS from steps 1–2 | `results/fig4_cbc_heatmap.pdf` | Per-group Spearman CBC × miR-4532 heatmap |
-| `06_figure5_monocyte_scatter.R` | RDS from step 1 | `results/fig5_monocyte_scatter.pdf` | Monocyte × miR-4532 Pearson scatter per group |
-| `07_figure6_enrichr_network.R` | `mir2gene.sqlite` | `results/fig6_enrichr_network.pdf` or `fig6_enrichr_dotplot.png` | Target enrichment (enrichR), network or dotplot fallback |
+| `02_FigS1_pca_heatmap.R` | RDS from step 1 | `results/FigS1_pca_heatmap.png` | PCA (rank=5) × clinical variable heatmap (ANOVA p-values) |
+| `03_Fig1_fdr_volcano.R` | RDS from step 1 | `results/Fig1_fdr_volcano.png` | limma DE (3 contrasts), FDR rank plot + volcano |
+| `04_Fig2A_mir4532boxplot.R` | RDS from steps 1–2 | `results/Fig2A_mir4532boxplot.png` | Two-stage candidate selection, miR-4532 boxplot |
+| `05_Fig2B_cbc_heatmap.R` | RDS from steps 1–2 | `results/Fig2B_cbc_heatmap.pdf` | Per-group Spearman CBC × miR-4532 heatmap |
+| `06_Fig2C_monocyte_scatter.R` | RDS from step 1 | `results/Fig2C_monocyte_scatter.pdf` | Monocyte × miR-4532 Pearson scatter per group |
+| `07_Fig2D_enrichr_network.R` | `mir2gene.sqlite` | `results/Fig2D_enrichr_network.pdf` or `results/Fig2D_enrichr_dotplot.png` | Target enrichment (enrichR), network or dotplot fallback |
 
 ## Notes
 
@@ -53,32 +55,43 @@ Rscript src/07_figure6_enrichr_network.R  # Figure 6: enrichR network/dotplot
 ## Directory Structure
 
 ```
-dysf_mirna_docker/
-├── Dockerfile
-├── docker-compose.yml
+dysf_mirna/
+├── .gitignore
 ├── .Rprofile
 ├── .here
+├── Dockerfile
 ├── README.md
+├── docker-compose.yml
+├── cel_files/          # Raw CEL files (74 arrays; not tracked by Git)
 ├── data/
-│   ├── mirna/
-│   │   ├── normalized_data.TXT
-│   │   └── miRNA-4_0-st-v1.annotations.20160922.csv
-│   ├── clinical/
-│   │   └── Samples sent to Scripps_2015.04.07_age_sex.csv
+│   ├── annotations/
+│   │   └── mir2gene.sqlite
 │   ├── cbc/
 │   │   └── md_cbc.csv
-│   └── annotations/
-│       └── mir2gene.sqlite
-├── cel_files/          # YOU PROVIDE: 74 CEL files here
-├── src/
+│   ├── clinical/
+│   │   ├── Samples sent to Scripps_2015.04.07_age_sex.csv
+│   │   └── clinical.csv
+│   └── mirna/
+│       ├── miRNA-4_0-st-v1.annotations.20160922.csv
+│       ├── mirna.csv
+│       └── normalized_data_celderived.TXT
+├── geo/
+│   └── GA_affy_DYSF.xlsx
+├── manuscript/
+│   ├── old/
+│   ├── tgrewal_dysf_mirna_manuscript_2026.docx
+│   └── tgrewal_dysf_mirna_supplement_2026.docx
+├── results/            # Figures, QC reports, and RDS intermediates
+│   └── qc/
+└── src/
 │   ├── utils.R
 │   ├── 00_cel_to_normalized.R
+│   ├── 00b_qc_cel.R
 │   ├── 01_data_import.R
-│   ├── 02_figure1_pca_heatmap.R
-│   ├── 03_figure2_volcano.R
-│   ├── 04_figure3_mir4532_boxplot.R
-│   ├── 05_figure4_cbc_heatmap.R
-│   ├── 06_figure5_monocyte_scatter.R
-│   └── 07_figure6_enrichr_network.R
-└── results/           # Output directory (figures + RDS intermediates)
+│   ├── 02_FigS1_pca_heatmap.R
+│   ├── 03_Fig1_fdr_volcano.R
+│   ├── 04_Fig2A_mir4532boxplot.R
+│   ├── 05_Fig2B_cbc_heatmap.R
+│   ├── 06_Fig2C_monocyte_scatter.R
+│   └── 07_Fig2D_enrichr_network.R
 ```
